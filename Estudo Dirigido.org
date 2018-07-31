@@ -1,0 +1,16 @@
+#+OPTIONS: toc:nil num:nil
+
+* Pesquisa para Estudo Dirigido II
+** Proposta
+    - Aplicar o conceito de aproximação local do LIME, mas ao invés de usar um modelo linear usar a entropia condicional (Informação mútua: I(Y|X)) das das respostas do modelo.
+*** TODO Qual a diferença? Vantagens e desvantagens?
+    - [[https://stats.stackexchange.com/questions/360022/how-does-lime-compares-with-mutual-information][Pergunta no CV]] 
+*** O LIME usa modelos lineares e define \omega(g) como o número de coeficientes não-nulos
+    - Seria possível usar aproxiamções de grau maior? Como interpretar?
+*** Usar a Informação Mútua com as distribuições "discretizadas"? Ou usar aproximações para as distribuições contínuas?
+** Plano de trabalho
+*** Escolher um (ou mais) datasets
+*** Treinar um (ou mais) modelos
+*** Usar o LIME para explicar algumas instâncias
+*** Escrever código para computar a informação mútua de perturbações na instâncias
+*** Comparar explicações com as do LIME
