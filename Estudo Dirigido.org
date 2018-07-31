@@ -6,7 +6,7 @@
 *** TODO Qual a diferença? Vantagens e desvantagens?
     - [[https://stats.stackexchange.com/questions/360022/how-does-lime-compares-with-mutual-information][Pergunta no CV]] 
 *** O LIME usa modelos lineares e define \omega(g) como o número de coeficientes não-nulos
-    - Seria possível usar aproxiamções de grau maior? Como interpretar?
+    - Seria possível usar aproximações de grau maior? Como interpretar?
 *** Usar a Informação Mútua com as distribuições "discretizadas"? Ou usar aproximações para as distribuições contínuas?
 ** Plano de trabalho
 *** Escolher um (ou mais) datasets
