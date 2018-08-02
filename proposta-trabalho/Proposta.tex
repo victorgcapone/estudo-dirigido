@@ -18,23 +18,30 @@ Métodos baseados em modelos-proxy podem ser usados para fornecer
 explicações baseadas em importância de atributos para um dada instância
 de uma tarefa de aprendizado de máquina, modelos-proxy são modelos
 mais simples, treinados sobre um conjunto de dados modificado $Y^*:
-(x_1,\hdot,x_n) \rightarrow y^*$
-onde $y^*$ é a \textit{label} atribuída à instância $(x_1,\hdot,x_n)$ pelo
+(x_1,\dots,x_n) \rightarrow y^*$
+onde $y^*$ é a \textit{label} atribuída à instância $(x_1,\dots,x_n)$ pelo
 modelo sendo analisado, então, passamos a interpretar o modelo-proxy, que passa
 a ser uma aproximação da fronteira de descisão do modelo original.
 
 \section*{Proposta}
 \label{sec:proposta}
 
-Baseado no trabalho de <<Citação do Lime>>, este projeto se propõe
+Baseado no trabalho de Ribeito \textit{et al.}\cite{lime} este projeto se propõe
 a estudar como uma abordagem de modelo-proxy fundamentada no conceito
 de Informação Mútua pode ser utilizada para interpretar modelos de aprendizado
 de máquina. Para isso, diferentes modelos serão treinados em tarefas de
 classificação, em diferentes conjuntos de dados e explicações serão geradas
 para instâncias aleatórias, essas explicações serã comparadas com explicações do
-geradas por LIME <<Citação>> com o objetivo de comparar as diferenças
+geradas por LIME \cite{lime} com o objetivo de comparar as diferenças
 decorrentes do uso de um modelo que não assume lineraridade nas vizinhanças
 da instâncias.
 
+Os 3 primeiros meses de trabalhos serão voltados essencialmente para o detalhamento
+técnico do solução proposta e sua implementação, uma vez que a obtenção de
+dados e treinamento de modelos é simplificada com o uso de bibliotecas
+especializadas e a implementação do LIME pode ser encontrada em \cite{lime}
+reduzindo o tempo de trabalho necessário para a etapa de avaliação.
 
+\bibliography{proposta}{}
+\bibliographystyle{plain}
 \end{document}

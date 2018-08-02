@@ -4,3 +4,7 @@
 *.fmt
 *.el
 *_*_*
+*.bbl
+*.blg
+*.synctex.gz
+ 
