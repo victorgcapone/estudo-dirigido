@@ -27,4 +27,6 @@
      - Feito no Lime em lime_tabular.py@381 (__data_inverse), tratamentos diferentes para features
        numéricas ("desnormaliza") e categóricas (1 se for igual a instância e 0 cc)[?]
 **** Calcula informação mútua sobre a distribuição local
+     - Com as perturbações geradas, fazer o bucketing de cada feature (categorizando-as), isso vai nos dar 
+       uma distribuição discreta.
 **** Gera um representação interpretável para isso
