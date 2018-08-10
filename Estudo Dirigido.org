@@ -14,3 +14,15 @@
 *** Usar o LIME para explicar algumas instâncias
 *** Escrever código para computar a informação mútua de perturbações na instâncias
 *** Comparar explicações com as do LIME
+
+* Estratégia de Trabalho
+** Fluxo principal
+*** Treinar um modelo de ML sobre seus dados
+*** Criar um explicador, passando uma interface de previsão (ex: .fit()) e o dataset
+**** Explicador faz pré-precessamento
+     - É necessário algum? Qual? Pode ser que mude? O código precisa ser flexível o suficiente para permitir isso?
+     - Provavelmente pré-computar buckets para as distribuições?
+*** Chamar a função de explicação para uma determinada instância
+**** Gera perturbações no datapoint
+**** Calcula informação mútua sobre a distribuição local
+**** Gera um representação interpretável para isso
