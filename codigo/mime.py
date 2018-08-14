@@ -1,5 +1,6 @@
 # coding:utf-8
 import math
+from numpy import digitize
 # MIME is a Mutual Information Model-Agnostic Explanator for machine learning
 # black boxes, it uses a similar aproach to that of LIME, probing the decision
 # with perturbed versions of the instance being explained
@@ -27,8 +28,11 @@ class Mime(object):
         self.explainer = explainer(**explainerParameters)
         self.preprocessor.preprocess()
 
-    def explain(self, instance):
-        self.explainer(instance, **self.preprocessor.computed)
+    # Parameters:
+    # instance  : the instance being explained
+    # predictor : a function that takes instance and returns a black-box prediction
+    def explain(self, instance, predictor):
+        self.explainer(instance, predictor, **self.preprocessor.computed)
 
 # Before explaining our instances we may need to do
 # some pre-calculations for some reason, this is
@@ -43,9 +47,15 @@ class MimePreprocessor(object):
     def preprocess(self):
         # For MIME we need to precompute the optimal number of bins for each non-categorical feature
         # We do this using Sturge's Formula and the Sample Size
+        # Then we change our data to the binned version
         self.computed = {}
         self.computed["optimalBins"] = math.log(data.data.shape[0], 2) + 1
         self.computed["sampleSize"] = 0.1 * data.data.shape[0] # 10% of the data size
+        for i in range(data.data.shape[1]):
+            if i in data.categorical:
+                continue
+           tmp = self.data.data.T.values
+
 
 # At last, the explainer takes an instance and pre-computed data
 # and generates an explanation for it
@@ -57,5 +67,5 @@ class MimeExplainer(object):
     # You can use kwargs to pass parameters precomputed by the preprocessor
     # MimeExplainer expects an "optimalBins" parameters and a "sampleSize"
     # parameter
-    class explain(self, instance, **kwarg):
+    class explain(self, instance, predictors, **kwarg):
         pass
