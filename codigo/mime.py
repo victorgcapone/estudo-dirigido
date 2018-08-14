@@ -1,6 +1,6 @@
 # coding:utf-8
 import math
-from numpy import digitize
+from numpy import digitize, linspace
 # MIME is a Mutual Information Model-Agnostic Explanator for machine learning
 # black boxes, it uses a similar aproach to that of LIME, probing the decision
 # with perturbed versions of the instance being explained
@@ -54,8 +54,10 @@ class MimePreprocessor(object):
         for i in range(data.data.shape[1]):
             if i in data.categorical:
                 continue
-           tmp = self.data.data.T.values
-
+            #Digitizes the values on the given columns
+            tmp = self.data.data.T.values
+            bins = linspace(min(tmp), max(tmp), self.computed["optimalBins"])
+            binned = digitize(tmp, bins)
 
 # At last, the explainer takes an instance and pre-computed data
 # and generates an explanation for it
