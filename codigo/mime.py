@@ -7,14 +7,20 @@
 class Mime(object):
 
     # Mime works with pandas DataFrames
-    def __init__(self, dataframe, preprocessor=MimePreprocessor, explainer=MimeExplainer):
+    # Parameters:
+    # dataframe    : your data
+    # categorical  : a list with the index of the categorical columns
+    # preprocessor : the preprocessor for your explanations (default: MimePreprocessor)
+    # explainer    : the explainer that will generate your explanations (default: MimeExplainer)
+    def __init__(self, dataframe, categorical, preprocessor=MimePreprocessor, explainer=MimeExplainer):
         self.data = dataframe
+        self.categorical = categorical
         self.preprocessor = preprocessor(data)
 
     def explain(self, instance):
         pass
 
-# Beforing explaining our instances we may need to do
+# Before explaining our instances we may need to do
 # some pre-calculations for some reason, this is
 # the role of the preprocessor
 class MimePreprocessor(object):
@@ -24,7 +30,7 @@ class MimePreprocessor(object):
         self.data = data
         self.args = kwargs
 
-    def preprocess(self, **kwargs):
+    def preprocess(self):
         pass
 
 # At last, the explainer takes an instance and pre-computed data
