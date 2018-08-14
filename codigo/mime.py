@@ -2,6 +2,7 @@
 import math
 from numpy import digitize, linspace
 import random
+import sklearn.metrics as skm
 # Used to encapsulate all data and metadata for message passing between layers in mime
 class DataWrapper(object):
 
@@ -26,7 +27,8 @@ class MimePreprocessor(object):
         # We do this using Sturge's Formula and the Sample Size
         # Then we change our data to the binned version
         self.computed["optimalBins"] = int(math.log(self.data.data.shape[0], 2) + 1)
-        self.computed["sampleSize"] = 0.1 * self.data.data.shape[0] # 10% of the data size
+        self.computed["sampleSize"] = int(0.1 * self.data.data.shape[0]) # 10% of the data size
+        self.computed["bins"] = []
         dataCopy = self.data.data.copy()
         tmp = self.data.data.T.values
         for i in range(self.data.data.shape[1]):
@@ -34,23 +36,23 @@ class MimePreprocessor(object):
                 continue
             #Digitizes the values on the given columns
             bins = linspace(min(tmp[i]), max(tmp[i]), self.computed["optimalBins"])
+            self.computed["bins"].append(bins)
             binned = digitize(tmp[i], bins)
             dataCopy[dataCopy.columns[i]] = binned
-        newData = DataWrapper(dataCopy, self.data.categorical)
+        newData = DataWrapper(dataCopy, self.data.target, self.data.categorical)
         return newData
-
 
 class Sampler(object):
 
     def __init__(self):
         random.seed()
 
-    def sampleNeighborhood(instance, data, size):
+    def sampleNeighborhood(self, instance, data, size):
         neighborhood = []
         means = data.data.mean()
         stdevs = data.data.std()
         for i in range(size):
-            sample = [means[feature] + random.normalvariate(0,1) * stdevs[feature] for feature in range(len(data.data.columns))]
+            sample = [instance[feature] + random.normalvariate(0,1) * stdevs[feature] for feature in range(len(data.data.columns))]
             neighborhood.append(sample)
         return neighborhood
 
@@ -64,9 +66,15 @@ class MimeExplainer(object):
 
     # You can use kwargs to pass parameters precomputed by the preprocessor
     # MimeExplainer expects a "sampleSize" parameter
-    def explain(self, instance, data, predictors, **kwarg):
-       neighborhood = self.sampler.sampleNeighborhood(instance, data, kwargs['sampleSize'])
+    def explain(self, instance, data, predictor, preprocessor):
+       processedData = preprocessor.preprocess()
+
+       neighborhood = self.sampler.sampleNeighborhood(instance, data, preprocessor.computed['sampleSize']);
        neighborhoodLabels = predictor(neighborhood)
+
+       transposedData = [[processedData.data[c][l] for l in range(len(neighborhood))] for c in range(len(neighborhood[0]))]
+       # For each feature, calculates its mutual information with the labels
+       return [skm.mutual_info_score(transposedData[i], neighborhoodLabels) for i in range(len(transposedData))] , predictor([instance])
 
 # MIME is a Mutual Information Model-Agnostic Explanator for machine learning
 # black boxes, it uses a similar aproach to that of LIME, probing the decision
@@ -85,11 +93,10 @@ class Mime(object):
         self.data = DataWrapper(dataframe, target, categorical)
         self.preprocessor = preprocessor(self.data, **preprocessorParameters)
         self.explainer = explainer(**explainerParameters)
-        self.preprocessor.preprocess()
 
     # Parameters:
     # instance  : the instance being explained
     # predictor : a function that takes instance and returns a black-box prediction
     def explain(self, instance, predictor):
-        self.explainer(instance, predictor, **self.preprocessor.computed)
+        return self.explainer.explain(instance, self.data, predictor, self.preprocessor)
 
