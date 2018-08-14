@@ -27,7 +27,7 @@ class MimePreprocessor(object):
         # We do this using Sturge's Formula and the Sample Size
         # Then we change our data to the binned version
         self.computed["optimalBins"] = int(math.log(self.data.data.shape[0], 2) + 1)
-        self.computed["sampleSize"] = int(0.1 * self.data.data.shape[0]) # 10% of the data size
+        self.computed["sampleSize"] = int(0.2 * self.data.data.shape[0]) # 10% of the data size
         self.computed["bins"] = []
         dataCopy = self.data.data.copy()
         tmp = self.data.data.T.values
@@ -53,7 +53,7 @@ class Sampler(object):
         stdevs = data.data.std()
         for i in range(size):
             sample = [instance[feature] + random.normalvariate(0,1) * stdevs[feature] for feature in range(len(data.data.columns))]
-            neighborhood.append(sample)
+            neighborhood.extend(sample)
         return neighborhood
 
 # At last, the explainer takes an instance and pre-computed data
