@@ -33,5 +33,6 @@
        uma distribuição discreta.
      - Como escolher o número ótimo de bins? [[https://en.wikipedia.org/wiki/Histogram#Number_of_bins_and_width][Wikipedia]]
      - A fórmula de Sturge k = log_2 n + 1 assume normalidade, é razoável?
+     - Sample size ótimo? LIME faz um samplig uniforme (porquê?) estou usando 10%. Quem é o responsável (Explainer ou Preprocessor)
 **** Gera um representação interpretável para isso
      
