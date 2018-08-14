@@ -12,10 +12,12 @@ class Mime(object):
     # categorical  : a list with the index of the categorical columns
     # preprocessor : the preprocessor for your explanations (default: MimePreprocessor)
     # explainer    : the explainer that will generate your explanations (default: MimeExplainer)
-    def __init__(self, dataframe, categorical, preprocessor=MimePreprocessor, explainer=MimeExplainer):
+    # parameters   : the parameters (if any) you want to pass to your preprocessor or explainer, should be a dict
+    def __init__(self, dataframe, categorical, preprocessor=MimePreprocessor, explainer=MimeExplainer, preprocessorParameters={}, explainerParameters={}):
         self.data = dataframe
         self.categorical = categorical
-        self.preprocessor = preprocessor(data)
+        self.preprocessor = preprocessor(data, **preprocessorParameters)
+        self.explainer = explainer(**explainerParameters)
 
     def explain(self, instance):
         pass
@@ -37,9 +39,8 @@ class MimePreprocessor(object):
 # and generates an explanation for it
 class MimeExplainer(object):
 
-    class __init__(self):
-        pass
-
+    class __init__(self, **kwargs):
+       self.args = kwargs
     # You can use kwargs to pass parameters precomputed by the preprocessor
     class explain(self, instance, **kwarg):
         pass
