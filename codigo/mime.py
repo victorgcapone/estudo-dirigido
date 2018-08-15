@@ -3,6 +3,24 @@ import math
 from numpy import digitize, linspace
 import random
 import sklearn.metrics as skm
+
+def prob(e, space):
+    return space.count(e)/len(space)
+
+def weigthed_mutual_information(x, y, weights):
+    if len(weights) != len(x):
+        raise ValueError("Weights and X must have the same length")
+    uX = set(x)
+    uY = set(y)
+    joint = zip(y,x)
+    mi = 0
+    for vY in uY:
+        for vX in uX:
+            w = 1 # TODO, calcular o peso para cada instância
+            p = prob((vY,vX),joint)
+            mi +=  * p * math.log(p/(prob(vX,x)*prob(vY,y)))
+    return mi
+
 # Used to encapsulate all data and metadata for message passing between layers in mime
 class DataWrapper(object):
 
@@ -47,13 +65,13 @@ class Sampler(object):
     def __init__(self):
         random.seed()
 
-    def sampleNeighborhood(self, instance, data, size):
+    def sample_neighborhood(self, instance, data, size):
         neighborhood = []
         means = data.data.mean()
         stdevs = data.data.std()
         for i in range(size):
             sample = [instance[feature] + random.normalvariate(0,1) * stdevs[feature] for feature in range(len(data.data.columns))]
-            neighborhood.extend(sample)
+            neighborhood.append(sample)
         return neighborhood
 
 # At last, the explainer takes an instance and pre-computed data
@@ -67,15 +85,28 @@ class MimeExplainer(object):
     # You can use kwargs to pass parameters precomputed by the preprocessor
     # MimeExplainer expects a "sampleSize" parameter
     def explain(self, instance, data, predictor, preprocessor):
-       processedData = preprocessor.preprocess()
+        # Preprocess data
+        processedData = preprocessor.preprocess()
+        # Generate negihborhood samples
+        neighborhood = self.sampler.sample_neighborhood(instance, data, preprocessor.computed['sampleSize']);
+        # Label the samples
+        neighborhoodLabels = predictor(neighborhood)
+        # Weight the samples
+        # Decorator so we can use map
 
-       neighborhood = self.sampler.sampleNeighborhood(instance, data, preprocessor.computed['sampleSize']);
-       neighborhoodLabels = predictor(neighborhood)
+        weights = self.weight_samples(instance, neighborhood)
 
-       transposedData = [[processedData.data[c][l] for l in range(len(neighborhood))] for c in range(len(neighborhood[0]))]
-       # For each feature, calculates its mutual information with the labels
-       return [skm.mutual_info_score(transposedData[i], neighborhoodLabels) for i in range(len(transposedData))] , predictor([instance])
+        transposedData = [[processedData.data[c][l] for l in range(len(neighborhood))] for c in range(len(neighborhood[0]))]
+        # For each feature, calculates its mutual information with the labels
+        return [weigthed_mutual_information(transposedData[i], neighborhoodLabels, weights) for i in range(len(transposedData))] , predictor([instance])
 
+    def weight_samples(self, instance, neighborhood):
+        w = []
+        width = 10
+        for n in neighborhood:
+            dsqr = sum([(iF-nF)**2 for iF,nF in zip(instance,n)])
+            w.append(math.exp(-dsqr/width))
+        return w
 # MIME is a Mutual Information Model-Agnostic Explanator for machine learning
 # black boxes, it uses a similar aproach to that of LIME, probing the decision
 # with perturbed versions of the instance being explained
