@@ -3,6 +3,7 @@ import math
 from numpy import digitize, linspace
 import random
 import sklearn.metrics as skm
+import pandas as pd
 
 def prob(e, space):
     return space.count(e)/len(space)
@@ -13,7 +14,7 @@ def weigthed_mutual_information(x, y, weights):
     print(y)
     if len(weights) != len(x):
         raise ValueError("Weights and X must have the same length")
-    uX = set(x)
+    uX = set(x.flatten())
     uY = set(y)
     joint = list(zip(y,x))
     mi = 0
@@ -43,24 +44,28 @@ class MimePreprocessor(object):
         self.args = kwargs
         self.computed = kwargs
 
-    def preprocess(self):
-        # For MIME we need to precompute the optimal number of bins for each non-categorical feature
+    def preprocess(self, data=None):
+        if data==None:
+            workingData = self.data
+        else:
+            workingData = data
+        # For MIME we need toprecompute the optimal number of bins for each non-categorical feature
         # We do this using Sturge's Formula and the Sample Size
         # Then we change our data to the binned version
-        self.computed["optimalBins"] = int(math.log(self.data.data.shape[0], 2) + 1)
-        self.computed["sampleSize"] = int(0.2 * self.data.data.shape[0]) # 10% of the data size
+        self.computed["optimalBins"] = int(math.log(workingData.data.shape[0], 2) + 1)
+        self.computed["sampleSize"] = int(0.1 * workingData.data.shape[0]) # 10% of the data size
         self.computed["bins"] = []
-        dataCopy = self.data.data.copy()
-        tmp = self.data.data.T.values
-        for i in range(self.data.data.shape[1]):
-            if i in self.data.categorical:
+        dataCopy = workingData.data.copy()
+        tmp = workingData.data.T.values
+        for i in range(workingData.data.shape[1]):
+            if i in workingData.categorical:
                 continue
             #Digitizes the values on the given columns
             bins = linspace(min(tmp[i]), max(tmp[i]), self.computed["optimalBins"])
             self.computed["bins"].append(bins)
             binned = digitize(tmp[i], bins)
             dataCopy[dataCopy.columns[i]] = binned
-        newData = DataWrapper(dataCopy, self.data.target, self.data.categorical)
+        newData = DataWrapper(dataCopy, workingData.target, workingData.categorical)
         return newData
 
 class Sampler(object):
@@ -90,18 +95,22 @@ class MimeExplainer(object):
     def explain(self, instance, data, predictor, preprocessor):
         # Preprocess data
         processedData = preprocessor.preprocess()
-        # Generate negihborhood samples
-        neighborhood = self.sampler.sample_neighborhood(instance, data, preprocessor.computed['sampleSize']);
-        # Label the samples
+        # Generate neighborhood samples
+        neighborhood = pd.DataFrame(self.sampler.sample_neighborhood(instance, data, preprocessor.computed['sampleSize']));
+         # Label the samples
         neighborhoodLabels = predictor(neighborhood)
+        print(neighborhood)
+        print(neighborhoodLabels)
+        neighborhoodData = DataWrapper(neighborhood, neighborhoodLabels, data.categorical)
+        neighborhoodData = preprocessor.preprocess(neighborhoodData)
+        print(neighborhoodData.data)
         # Weight the samples
-        # Decorator so we can use map
 
-        weights = self.weight_samples(instance, neighborhood)
-
-        transposedData = [[processedData.data[c][l] for l in range(len(neighborhood))] for c in range(len(neighborhood[0]))]
+        weights = self.weight_samples(instance, neighborhoodData.data.values)
+        print(weights)
+        #transposedData = [list(i) for i in zip(*neighborhood)]
         # For each feature, calculates its mutual information with the labels
-        return [weigthed_mutual_information(transposedData[i], neighborhoodLabels, weights) for i in range(len(transposedData))] , predictor([instance])
+        return weigthed_mutual_information(neighborhoodData.data.values, neighborhoodLabels, weights), predictor([instance])
 
     def weight_samples(self, instance, neighborhood):
         w = []
@@ -110,6 +119,7 @@ class MimeExplainer(object):
             dsqr = sum([(iF-nF)**2 for iF,nF in zip(instance,n)])
             w.append(math.exp(-dsqr/width))
         return w
+
 # MIME is a Mutual Information Model-Agnostic Explanator for machine learning
 # black boxes, it uses a similar aproach to that of LIME, probing the decision
 # with perturbed versions of the instance being explained
