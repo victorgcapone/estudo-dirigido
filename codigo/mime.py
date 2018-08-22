@@ -8,17 +8,20 @@ def prob(e, space):
     return space.count(e)/len(space)
 
 def weigthed_mutual_information(x, y, weights):
+    print(weights)
+    print(x)
+    print(y)
     if len(weights) != len(x):
         raise ValueError("Weights and X must have the same length")
     uX = set(x)
     uY = set(y)
-    joint = zip(y,x)
+    joint = list(zip(y,x))
     mi = 0
     for vY in uY:
         for vX in uX:
             w = 1 # TODO, calcular o peso para cada instância
             p = prob((vY,vX),joint)
-            mi +=  * p * math.log(p/(prob(vX,x)*prob(vY,y)))
+            mi +=  w * p * math.log(p/(prob(vX,x)*prob(vY,y)))
     return mi
 
 # Used to encapsulate all data and metadata for message passing between layers in mime
@@ -70,7 +73,7 @@ class Sampler(object):
         means = data.data.mean()
         stdevs = data.data.std()
         for i in range(size):
-            sample = [instance[feature] + random.normalvariate(0,1) * stdevs[feature] for feature in range(len(data.data.columns))]
+            sample = [means[feature] + random.normalvariate(0,1) * stdevs[feature] for feature in range(len(data.data.columns))]
             neighborhood.append(sample)
         return neighborhood
 
