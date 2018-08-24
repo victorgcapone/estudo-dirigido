@@ -97,27 +97,33 @@ class MimeExplainer(object):
         processedData = preprocessor.preprocess()
         # Generate neighborhood samples
         neighborhood = pd.DataFrame(self.sampler.sample_neighborhood(instance, data, preprocessor.computed['sampleSize']));
-         # Label the samples
+        # Label the samples
         neighborhoodLabels = predictor(neighborhood)
         print(neighborhood)
         print(neighborhoodLabels)
+        # Weight the samples
+        bins_weights = self.weight_bins(instance, preprocessor.computed["bins"])
+        print(bins_weights)
         neighborhoodData = DataWrapper(neighborhood, neighborhoodLabels, data.categorical)
         neighborhoodData = preprocessor.preprocess(neighborhoodData)
-        print(neighborhoodData.data)
-        # Weight the samples
-
-        weights = self.weight_samples(instance, neighborhoodData.data.values)
-        print(weights)
-        #transposedData = [list(i) for i in zip(*neighborhood)]
         # For each feature, calculates its mutual information with the labels
-        return weigthed_mutual_information(neighborhoodData.data.values, neighborhoodLabels, weights), predictor([instance])
+        return weigthed_mutual_information(neighborhoodData.data.values, neighborhoodLabels, bins_weights), predictor([instance])
 
-    def weight_samples(self, instance, neighborhood):
+    def weight_bins(self, instance, bins):
         w = []
         width = 10
-        for n in neighborhood:
-            dsqr = sum([(iF-nF)**2 for iF,nF in zip(instance,n)])
-            w.append(math.exp(-dsqr/width))
+        print(bins)
+        print(instance)
+        for f in range(len(instance)):
+            bins_w = []
+            for b in range(1, len(bins[0])):
+                #Falta, gerar a última bin
+                print(b)
+                bin_midpoint = bins[f][b]-(bins[f][b]-bins[f][b-1])/2
+                print(bin_midpoint)
+                dsqr = (instance[f] - bin_midpoint)**2
+                bins_w.append(math.exp(-dsqr/width))
+            w.append(bins_w)
         return w
 
 # MIME is a Mutual Information Model-Agnostic Explanator for machine learning
