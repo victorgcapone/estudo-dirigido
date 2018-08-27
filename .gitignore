@@ -9,3 +9,5 @@
 *.synctex.gz
 *.pyc
 *.#* 
+*checkpoint.ipynb*
+*.ipynb_checkpoints/*
