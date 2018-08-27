@@ -6,23 +6,27 @@ import sklearn.metrics as skm
 import pandas as pd
 
 def prob(e, space):
-    return space.count(e)/len(space)
+    p = float(space.count(e))/len(space)
+    return p
 
 def weigthed_mutual_information(x, y, weights):
-    print(weights)
-    print(x)
-    print(y)
-    if len(weights) != len(x):
-        raise ValueError("Weights and X must have the same length")
-    uX = set(x.flatten())
+    x = list(x)
+    y = list(y)
+    if len(weights) != len(x[0]):
+        raise ValueError("There must be as many features as there are weights sets")
+    xT = [list(column) for column in zip(*x)]
     uY = set(y)
-    joint = list(zip(y,x))
-    mi = 0
-    for vY in uY:
-        for vX in uX:
-            w = 1 # TODO, calcular o peso para cada instância
-            p = prob((vY,vX),joint)
-            mi +=  w * p * math.log(p/(prob(vX,x)*prob(vY,y)))
+    mi = [0] * len(xT)
+    for index, column in enumerate(xT):
+        uX = set(column)
+        joint = list(zip(y,column))
+        for vY in uY:
+            for i, vX in enumerate(column):
+                w = weights[index][vX] 
+                p = prob((vY,vX),joint)
+                prob_ratio = float(p)/(prob(vX,column)*prob(vY,y))
+                if p > 0:
+                    mi[index] +=  w * p * math.log(prob_ratio)
     return mi
 
 # Used to encapsulate all data and metadata for message passing between layers in mime
@@ -49,7 +53,7 @@ class MimePreprocessor(object):
             workingData = self.data
         else:
             workingData = data
-        # For MIME we need toprecompute the optimal number of bins for each non-categorical feature
+        # For MIME we need to precompute the optimal number of bins for each non-categorical feature
         # We do this using Sturge's Formula and the Sample Size
         # Then we change our data to the binned version
         self.computed["optimalBins"] = int(math.log(workingData.data.shape[0], 2) + 1)
@@ -99,11 +103,8 @@ class MimeExplainer(object):
         neighborhood = pd.DataFrame(self.sampler.sample_neighborhood(instance, data, preprocessor.computed['sampleSize']));
         # Label the samples
         neighborhoodLabels = predictor(neighborhood)
-        print(neighborhood)
-        print(neighborhoodLabels)
         # Weight the samples
         bins_weights = self.weight_bins(instance, preprocessor.computed["bins"])
-        print(bins_weights)
         neighborhoodData = DataWrapper(neighborhood, neighborhoodLabels, data.categorical)
         neighborhoodData = preprocessor.preprocess(neighborhoodData)
         # For each feature, calculates its mutual information with the labels
@@ -112,15 +113,12 @@ class MimeExplainer(object):
     def weight_bins(self, instance, bins):
         w = []
         width = 10
-        print(bins)
-        print(instance)
         for f in range(len(instance)):
             bins_w = []
-            for b in range(1, len(bins[0])):
+            bins_width = bins[0][1]-bins[0][0]
+            for b in range(len(bins[0])):
                 #Falta, gerar a última bin
-                print(b)
-                bin_midpoint = bins[f][b]-(bins[f][b]-bins[f][b-1])/2
-                print(bin_midpoint)
+                bin_midpoint = bins[f][b]-(bins_width)/2
                 dsqr = (instance[f] - bin_midpoint)**2
                 bins_w.append(math.exp(-dsqr/width))
             w.append(bins_w)

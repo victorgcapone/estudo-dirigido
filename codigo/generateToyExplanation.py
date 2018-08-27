@@ -10,5 +10,6 @@ mime = Mime(data,y)
 blackBox = SVC()
 blackBox.fit(x[:100], y[:100])
 #print([mutual_info_score(data.T.values[i], y) for i in range(4)])
-explanation = mime.explain(x[101], blackBox.predict)
-print(explanation)
+for i in range(101, 115):
+    explanation = mime.explain(x[i], blackBox.predict)
+    print(explanation)
