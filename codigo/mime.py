@@ -57,7 +57,7 @@ class MimePreprocessor(object):
         # We do this using Sturge's Formula and the Sample Size
         # Then we change our data to the binned version
         self.computed["optimalBins"] = int(math.log(workingData.data.shape[0], 2) + 1)
-        self.computed["sampleSize"] = int(0.1 * workingData.data.shape[0]) # 10% of the data size
+        self.computed["sampleSize"] = int(self.args["sampleFrac"] * workingData.data.shape[0])
         self.computed["bins"] = []
         dataCopy = workingData.data.copy()
         tmp = workingData.data.T.values
@@ -137,7 +137,7 @@ class Mime(object):
     # parameters   : the parameters (if any) you want to pass to your preprocessor or explainer, should be a dict
     def __init__(self, dataframe, target, categorical=[],
                  preprocessor=MimePreprocessor, explainer=MimeExplainer,
-                 preprocessorParameters={}, explainerParameters={}):
+                 preprocessorParameters={"sampleFrac": 0.1}, explainerParameters={}):
         self.data = DataWrapper(dataframe, target, categorical)
         self.preprocessor = preprocessor(self.data, **preprocessorParameters)
         self.explainer = explainer(**explainerParameters)

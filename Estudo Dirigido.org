@@ -17,6 +17,15 @@
 *** Escrever código para computar a informação mútua de perturbações na instâncias
 *** Comparar explicações com as do LIME
 
+** Artigo sobre XML Axiomático
+*** [[https://arxiv.org/pdf/1808.05054.pdf][Link do Artigo]]
+*** Define 3 axiomas para um explicação de ML
+**** Identidade: Uma instância tem sempre a mesma explicação
+**** Separabilidade: Instâncias não-idênticas tem explicações diferentes
+**** Estabilidade: Instâncias parecidas tem explicações parecidas
+*** Quão razoáveis são esse axiomas?
+    - Métodos de aproximação Local da Fronteira não podem garantir nenhum dos 3 (?)
+
 * Estratégia de Trabalho
 ** Fluxo principal
 *** Treinar um modelo de ML sobre seus dados
