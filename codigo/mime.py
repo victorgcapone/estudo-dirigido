@@ -52,8 +52,16 @@ class MimePreprocessor(object):
         self.compute_params(self.data)
 
     def compute_params(self, data):
-        self.computed["optimalBins"] = int(math.log(data.shape[0], 2) + 1)
-        self.computed["sampleSize"] = int(0.1 * data.shape[0])  # 10% of the data size
+        self.computed["optimalBins"] = int(math.log(data.data.shape[0], 2) + 1)
+        self.computed["sampleSize"] = int(0.1 * data.data.shape[0])
+        self.computed["bins"] = []
+        tmp = data.data.T.values
+        for i in range(data.data.shape[1]):
+            if i in data.categorical:
+                continue
+            # Digitizes the values on the given columns
+            bins = linspace(min(tmp[i]), max(tmp[i]), self.computed["optimalBins"])
+            self.computed["bins"].append(bins)
 
     def preprocess(self, data=None):
         if data is not None:
@@ -62,16 +70,12 @@ class MimePreprocessor(object):
         # For MIME we need to precompute the optimal number of bins for each non-categorical feature
         # We do this using Sturge's Formula and the Sample Size
         # Then we change our data to the binned version
-        self.computed["bins"] = []
         data_copy = working_data.data.copy()
         tmp = working_data.data.T.values
-        for i in range(working_data.data.shape[1]):
+        for i in range(data.data.shape[1]):
             if i in working_data.categorical:
                 continue
-            # Digitizes the values on the given columns
-            bins = linspace(min(tmp[i]), max(tmp[i]), self.computed["optimalBins"])
-            self.computed["bins"].append(bins)
-            binned = digitize(tmp[i], bins)
+            binned = digitize(tmp[i], self.computed["bins"][i])
             data_copy[data_copy.columns[i]] = binned
         new_data = DataWrapper(data_copy, working_data.target, working_data.categorical)
         return new_data
@@ -103,6 +107,7 @@ class MimeExplainer(object):
     # You can use kwargs to pass parameters precomputed by the preprocessor
     # MimeExplainer expects a "sampleSize" parameter
     def explain(self, instance, data, predictor, preprocessor):
+        preprocessor.compute_params(data)
         # Generate neighborhood samples
         neighborhood = pd.DataFrame(self.sampler.sample_neighborhood(instance, data,
                                                                      preprocessor.computed['sampleSize']))

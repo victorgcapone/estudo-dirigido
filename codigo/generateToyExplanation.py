@@ -18,4 +18,5 @@ for i in range(100):
 importance_distributions = [list(column) for column in zip(*all_explanations)]
 for feature in importance_distributions:
     plt.hist(feature)
+    plt.xlim((0, 5))
     plt.show()
