@@ -22,7 +22,12 @@ def weighted_mutual_information(x, y, weights):
         joint = list(zip(y, column))
         for vY in uy:
             for i, vX in enumerate(column):
-                w = weights[index][vX] 
+                w = weights[index]
+
+                # If the weigths are bin weights, fetch the weight for the correct bin
+                if isinstance(w, list):
+                    w = w[int(vX)]
+
                 p = prob((vY, vX), joint)
                 prob_ratio = float(p)/(prob(vX, column)*prob(vY, y))
                 if p > 0:
@@ -58,6 +63,8 @@ class MimePreprocessor(object):
         tmp = data.data.T.values
         for i in range(data.data.shape[1]):
             if i in data.categorical:
+                # Categorical features need not to be binned
+                self.computed["bins"].append(None)
                 continue
             # Digitizes the values on the given columns
             bins = linspace(min(tmp[i]), max(tmp[i]), self.computed["optimalBins"])
@@ -86,12 +93,26 @@ class Sampler(object):
     def __init__(self):
         random.seed()
 
+    def sample_continous(self, means, stdevs, feature):
+        return means[feature] + random.normalvariate(0, 1) * stdevs[feature]
+
+    def sample_categorical(self, column):
+        return random.choice(column.unique())
+
     def sample_neighborhood(self, instance, data, size):
         neighborhood = []
         means = data.data.mean()
         stdevs = data.data.std()
+        # TODO Deal with categorical data
         for i in range(size):
-            sample = [means[feature] + random.normalvariate(0,1) * stdevs[feature] for feature in range(len(data.data.columns))]
+            sample = [
+                    # If the feature is not categorical, do the "denormalization"
+                    self.sample_continous(means, stdevs, feature)
+                    if feature not in data.categorical else
+                    # Otherwise, just get a random category from the ones available
+                    self.sample_categorical(data.data[data.data.columns[feature]])
+                    for feature in range(len(data.data.columns))
+                ]
             neighborhood.append(sample)
         return neighborhood
 
@@ -124,8 +145,16 @@ class MimeExplainer(object):
     def weight_bins(self, instance, bins):
         w = []
         width = 10
+        # For every feature in instance
         for f in range(len(instance)):
             bins_w = []
+
+            # If the feature is Categorical, weight is 1
+            if bins[f] is None:
+                w.append(1)
+                continue
+
+            # If the feature is non-categorical, do the math
             bins_width = bins[0][1]-bins[0][0]
             for b in range(len(bins[0])):
                 # Falta, gerar a última bin
