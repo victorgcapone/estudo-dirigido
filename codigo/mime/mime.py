@@ -103,7 +103,6 @@ class Sampler(object):
         neighborhood = []
         means = data.data.mean()
         stdevs = data.data.std()
-        # TODO Deal with categorical data
         for i in range(size):
             sample = [
                     # If the feature is not categorical, do the "denormalization"
@@ -157,7 +156,6 @@ class MimeExplainer(object):
             # If the feature is non-categorical, do the math
             bins_width = bins[0][1]-bins[0][0]
             for b in range(len(bins[0])):
-                # Falta, gerar a última bin
                 bin_midpoint = bins[f][b]-bins_width/2
                 dsqr = (instance[f] - bin_midpoint)**2
                 bins_w.append(math.exp(-dsqr/width))
