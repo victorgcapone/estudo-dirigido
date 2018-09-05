@@ -73,7 +73,9 @@ class MimePreprocessor(object):
     def preprocess(self, data=None):
         if data is not None:
             working_data = data
-            self.compute_params(working_data)
+        else:
+            working_data = self.data
+        self.compute_params(working_data)
         # For MIME we need to precompute the optimal number of bins for each non-categorical feature
         # We do this using Sturge's Formula and the Sample Size
         # Then we change our data to the binned version

@@ -6,13 +6,13 @@ import matplotlib.pyplot as plt
 
 x, y = pmlb.fetch_data('monk1', return_X_y=True)
 data = pd.DataFrame(x)
-mime = Mime(data, y, categorical=[0, 1, 2, 3, 4, 5])
+explainer = Mime(data, y, categorical=[0, 1, 2, 3, 4, 5])
 blackBox = SVC()
 blackBox.fit(x[:450], y[:450])
 print(blackBox.score(x[450:], y[450:]))
 all_explanations = []
 for i in range(100):
-    explanation, pred = mime.explain(x[301], blackBox.predict)
+    explanation, pred = explainer.explain(x[301], blackBox.predict)
     all_explanations.append(explanation)
 
 print(all_explanations[:10])
