@@ -25,9 +25,9 @@ def weighted_mutual_information(x, y, weights):
                 w = weights[index]
 
                 # If the weigths are bin weights, fetch the weight for the correct bin
+                # Otherwise w is justa a number which means the feature is categorical
                 if isinstance(w, list):
                     w = w[int(vX)]
-
                 p = prob((vY, vX), joint)
                 prob_ratio = float(p)/(prob(vX, column)*prob(vY, y))
                 if p > 0:
@@ -145,18 +145,19 @@ class MimeExplainer(object):
 
     def weight_bins(self, instance, bins):
         w = []
+        # The kernel Width
         width = 10
         # For every feature in instance
         for f in range(len(instance)):
             bins_w = []
 
-            # If the feature is Categorical, weight is 1
+            # If the feature is Categorical, weight is the numeric code of the category
             if bins[f] is None:
                 w.append(1)
                 continue
 
             # If the feature is non-categorical, do the math
-            bins_width = bins[0][1]-bins[0][0]
+            bins_width = bins[f][1]-bins[f][0]
             for b in range(len(bins[0])):
                 bin_midpoint = bins[f][b]-bins_width/2
                 dsqr = (instance[f] - bin_midpoint)**2
