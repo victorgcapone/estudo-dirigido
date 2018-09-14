@@ -25,7 +25,7 @@ def weighted_mutual_information(x, y, weights):
                 w = weights[index]
 
                 # If the weigths are bin weights, fetch the weight for the correct bin
-                # Otherwise w is justa a number which means the feature is categorical
+                # Otherwise w is just a number which means the feature is categorical
                 if isinstance(w, list):
                     w = w[int(vX)]
                 p = prob((vY, vX), joint)
