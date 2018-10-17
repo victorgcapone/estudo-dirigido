@@ -158,7 +158,7 @@ class MimeExplainer(object):
 
             # If the feature is non-categorical, do the math
             bins_width = bins[f][1]-bins[f][0]
-            for b in range(len(bins[0])):
+            for b in range(len(bins[f])):
                 bin_midpoint = bins[f][b]-bins_width/2
                 dsqr = (instance[f] - bin_midpoint)**2
                 bins_w.append(math.exp(-dsqr/width))
