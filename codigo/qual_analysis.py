@@ -2,6 +2,7 @@ from mime import *
 import pmlb
 import pandas as pd
 from sklearn.svm import SVC
+import numpy as np
 from scipy.spatial.distance import pdist
 #import matplotlib.pyplot as plt
 
@@ -19,10 +20,17 @@ for instance in samples:
     explanation, pred = explainer.explain(instance, blackBox.predict)
     explanations.append(explanation)
 
-#print(explanations)
-print(pdist(explanations))
-importance_distributions = [list(column) for column in zip(*all_explanations)]
-"""for feature in importance_distributions:
-    plt.hist(feature)
-    plt.xlim((0, 5))
-    plt.show()"""
+print(explanations)
+explanations = np.asarray(explanations)
+np.save("explanations", explanations)
+np.save("distances", pdist(explanations))
+np.save("instances", np.asarray(samples))
+
+count=0
+# Separability
+for i, e in enumerate(explanation):
+    for j, e2 in enumerate(explanations[i+1:]):
+        if(np.equals(e,e2).all()):
+            count+=1.0
+
+print("Separability: %.4f" % (count/len(explanation)**2))
