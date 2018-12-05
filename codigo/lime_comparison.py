@@ -13,7 +13,6 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import GridSearchCV
 from sklearn.preprocessing import OneHotEncoder
 from scipy.stats import spearmanr, pearsonr
-import matplotlib.pyplot as plt
 
 # Fetch the data
 data = pmlb.fetch_data("churn")

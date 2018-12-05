@@ -3,6 +3,7 @@ import pmlb
 import pandas as pd
 from sklearn.svm import SVC
 from scipy.spatial.distance import pdist
+import numpy as np
 #import matplotlib.pyplot as plt
 
 x, y = pmlb.fetch_data('spambase', return_X_y=True)
@@ -20,7 +21,9 @@ for instance in samples:
     explanations.append(explanation)
 
 #print(explanations)
-print(pdist(explanations))
+distances = pdist(explanation)
+print(distances)
+np.save("distances", distances)
 importance_distributions = [list(column) for column in zip(*all_explanations)]
 """for feature in importance_distributions:
     plt.hist(feature)
